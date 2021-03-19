@@ -43,3 +43,9 @@ git merge upstream/develop --no-ff
 If I forget `--no-ff`
 (I probably will),
 it's not a big deal.
+
+## License
+
+Scratch Addons is licensed
+under the terms of the
+[GNU General Public License v3.0](https://github.com/ScratchAddons/ScratchAddons/blob/master/LICENSE).
