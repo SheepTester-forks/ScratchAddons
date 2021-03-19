@@ -1,4 +1,4 @@
-import { normalizeHex, getHexRegex } from "../../libraries/normalize-color.js";
+import { normalizeHex, getHexRegex, cssColorToHex } from "../../libraries/normalize-color.js";
 import RateLimiter from "../../libraries/rate-limiter.js";
 
 export default async ({ addon, console, msg }) => {
@@ -22,10 +22,10 @@ export default async ({ addon, console, msg }) => {
     if (color === null || color === "scratch-paint/style-path/mixed") return;
     // This value can be arbitrary - it can be HEX, RGB, etc.
     // Use tinycolor to convert them.
-    return tinycolor(color).toHexString();
+    return cssColorToHex(color, true);
   };
   const setColor = (hex, element) => {
-    hex = normalizeHex(hex);
+    hex = normalizeHex(hex, true);
     if (!addon.tab.redux.state || !addon.tab.redux.state.scratchPaint) return;
     // The only way to reliably set color is to invoke eye dropper via click()
     // then faking that the eye dropper reported the value.
@@ -60,13 +60,13 @@ export default async ({ addon, console, msg }) => {
     const saColorPickerColor = Object.assign(document.createElement("input"), {
       className: "sa-color-picker-color sa-color-picker-paint-color",
       type: "color",
-      value: defaultColor || "#000000",
+      value: defaultColor ? defaultColor.slice(0, 7) : "#000000",
     });
     const inputClass = document.querySelector('[class*="fixed-tools_costume-input"]').className.split(" ")[0];
     const saColorPickerText = Object.assign(document.createElement("input"), {
       className: `sa-color-picker-text sa-color-picker-paint-text ${inputClass}`,
       type: "text",
-      pattern: "^#?([0-9a-fA-F]{3}){1,2}$",
+      pattern: "^#?([0-9a-fA-F]{3,4}){1,2}$",
       placeholder: msg("hex"),
       value: defaultColor || "",
     });
@@ -75,14 +75,14 @@ export default async ({ addon, console, msg }) => {
     );
     saColorPickerText.addEventListener("change", () => {
       const { value } = saColorPickerText;
-      if (!getHexRegex().test(value)) return;
-      setColor((saColorPickerColor.value = normalizeHex(value)), element);
+      if (!getHexRegex(true).test(value)) return;
+      setColor((saColorPickerColor.value = normalizeHex(value, true)), element);
     });
     prevEventHandler = ({ detail }) => {
       if (detail.action.type === "scratch-paint/color-index/CHANGE_COLOR_INDEX") {
         setTimeout(() => {
           const color = getColor(element);
-          saColorPickerColor.value = color || "#000000";
+          saColorPickerColor.value = color ? color.slice(0, 7) : "#000000";
           saColorPickerText.value = color || "";
         }, 100);
       }
