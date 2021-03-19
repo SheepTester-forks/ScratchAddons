@@ -1,0 +1,18 @@
+{
+  "name": "Detect modifier keys",
+  "description": "Detect control and shift keys.",
+  "credits": [
+    {
+      "name": "Sheep_maker"
+    }
+  ],
+  "userscripts": [
+    {
+      "url": "userscript.js",
+      "matches": ["https://scratch.mit.edu/projects/*"]
+    }
+  ],
+  "tags": ["editor", "recommended"],
+  "enabledByDefault": false,
+  "l10n": true
+}
