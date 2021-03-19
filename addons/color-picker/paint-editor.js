@@ -2,6 +2,7 @@ import { normalizeHex, getHexRegex, cssColorToHex } from "../../libraries/normal
 import RateLimiter from "../../libraries/rate-limiter.js";
 
 export default async ({ addon, console, msg }) => {
+  console.log(addon)
   let prevEventHandler;
   // 250-ms rate limit
   const rateLimiter = new RateLimiter(250);
@@ -24,9 +25,26 @@ export default async ({ addon, console, msg }) => {
     // Use tinycolor to convert them.
     return cssColorToHex(color, true);
   };
+  addon.tab.redux.addEventListener("statechanged", console.log);
   const setColor = (hex, element) => {
     hex = normalizeHex(hex, true);
     if (!addon.tab.redux.state || !addon.tab.redux.state.scratchPaint) return;
+    const state = addon.tab.redux.state;
+    let fillOrStroke;
+    if (state.scratchPaint.modals.fillColor) {
+      fillOrStroke = "fill";
+    } else if (state.scratchPaint.modals.strokeColor) {
+      fillOrStroke = "stroke";
+    } else {
+      return;
+    }
+    addon.tab.redux.dispatch({
+      type: state.scratchPaint.fillMode.colorIndex === 0
+        ? `scratch-paint/${fillOrStroke}-style/CHANGE_${fillOrStroke.toUpperCase()}_COLOR`
+        : `scratch-paint/${fillOrStroke}-style/CHANGE_${fillOrStroke.toUpperCase()}_COLOR_2`,
+      color: hex
+    });
+    return
     // The only way to reliably set color is to invoke eye dropper via click()
     // then faking that the eye dropper reported the value.
     const onEyeDropperOpened = ({ detail }) => {
