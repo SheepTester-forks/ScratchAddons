@@ -4,6 +4,7 @@ export default async function ({ addon, global, console, msg }) {
   const vm = addon.tab.traps.vm;
 
   async function addSvgCostume(svg, name) {
+    // Based on https://github.com/LLK/scratch-gui/blob/c8c99479aaeafdab56d8c3f74b2915b4a223b908/src/containers/costume-tab.jsx#L204-L220
     const storage = vm.runtime.storage;
     const targetId = vm.editingTarget.id;
     const asset = storage.createAsset(
@@ -38,6 +39,8 @@ export default async function ({ addon, global, console, msg }) {
     fileInput.addEventListener("change", async () => {
       // Clone file list in case user changes it while loading
       const files = [...fileInput.files];
+      // Allow the user to reselect the same file
+      fileInput.value = null;
       for (const file of files) {
         await addSvgCostume(await fileToSvg(file), file.name.split(".", 1)[0]);
       }

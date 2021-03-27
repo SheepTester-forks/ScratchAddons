@@ -51,12 +51,12 @@ export async function fileToSvg(file) {
     scale = MAX_WIDTH / width;
   }
   if (scale * height > MAX_HEIGHT) {
-    scale *= MAX_HEIGHT / height;
+    scale *= MAX_HEIGHT / (scale * height);
   }
   return svgify({
     url,
-    width: width * scale,
-    height: height * scale,
+    width: width,
+    height: height,
     scale,
   });
 }
