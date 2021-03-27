@@ -1,0 +1,17 @@
+{
+  "name": "Upload bitmap costumes without losing quality",
+  "description": "Exploits the vector costumes' ability to contain bitmap images to store images of any size",
+  "tags": ["editor"],
+  "credits": [
+    {
+      "name": "Sheep_maker"
+    }
+  ],
+  "userscripts": [
+    {
+      "url": "userscript.js",
+      "matches": ["https://scratch.mit.edu/projects/*"]
+    }
+  ],
+  "l10n": true
+}
