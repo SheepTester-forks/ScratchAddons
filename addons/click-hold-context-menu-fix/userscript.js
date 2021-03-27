@@ -22,25 +22,6 @@ export default async function ({ addon, global, console }) {
       rightMouseDown = false;
     }
   });
-  // click is fired after mouseup
-  document.addEventListener("click", (e) => {
-    if (e.button === 0 && !rightMouseDown) {
-      window.requestAnimationFrame(() => {
-        leftMouseDown = true;
-        window.requestAnimationFrame(() => {
-          // In the second animation frame after the click, this is when Scratch
-          // unhides the context menu for some reason:
-          // 0. click event handler
-          //    [animation frame]
-          // 1. first animation frame callback
-          //    [animation frame]
-          // 2. Scratch unhides the context menu
-          //    second animation frame callback
-          leftMouseDown = false;
-        });
-      });
-    }
-  });
 
   // Detect when any pointer (touch, mouse, pen) has moved significantly
   // (chances are, if that's the case, the user isn't intending to press and
@@ -79,6 +60,7 @@ export default async function ({ addon, global, console }) {
         // Right clicking whilst left clicking should still open the context
         // menu
         if ((leftMouseDown && !rightMouseDown) || anyPointersMoved) {
+          // window.dispatchEvent(new Event('REACT_CONTEXTMENU_HIDE')) also works
           menu.style.opacity = 0;
           menu.style.pointerEvents = "none";
         }
