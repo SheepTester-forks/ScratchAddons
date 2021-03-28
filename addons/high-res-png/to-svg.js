@@ -39,7 +39,6 @@ function getImageSize(blob) {
   });
 }
 
-// TODO: Do we support custom stage sizes?
 const MAX_WIDTH = 480;
 const MAX_HEIGHT = 360;
 
