@@ -28,7 +28,7 @@ export default async function ({ addon, global, console, msg }) {
     const icon = Object.assign(document.createElement("img"), {
       className: addon.tab.scratchClass("action-menu_more-icon"),
       draggable: false,
-      src: "/static/assets/e587d9d7e9a2f1f28041ba5c15db7a40.svg",
+      src: addon.self.dir + "/icon.svg",
     });
     const fileInput = Object.assign(document.createElement("input"), {
       className: addon.tab.scratchClass("action-menu_file-input"),
