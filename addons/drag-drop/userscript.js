@@ -57,55 +57,27 @@ export default async function ({ addon, global, console }) {
     'div[class*="selector_wrapper"] input[class*="action-menu_file-input"]'
   );
 
+  const {
+    traps: { vm },
+    redux,
+  } = addon.tab;
   async function listMonitorsDroppable() {
     while (true) {
       const listMonitor = await addon.tab.waitForElement('div[class*="monitor_list-monitor"]', { markAsSeen: true });
+      const monitorName = listMonitor.querySelector('div[class*="monitor_list-header"]').textContent;
+      const monitor = redux.state.scratchGui.monitors.valueSeq().find((monitor) => {
+        if (!monitor.visible || monitor.opcode !== "data_listcontents") return false;
+        const label = monitor.spriteName ? `${monitor.spriteName}: ${monitor.params.LIST}` : monitor.params.LIST;
+        return label === monitorName;
+      });
+      const target = monitor.targetId ? vm.runtime.getTargetById(monitor.targetId) : vm.runtime.getTargetForStage();
+      const variable = target.variables[monitor.id];
       const canDrop = () => {
         // Don't show drop indicator if in fullscreen/player mode
         return !listMonitor.closest('div[class*="stage_full-screen"], .guiPlayer');
       };
       const handleDrop = async (files) => {
-        const contextMenuBefore = document.querySelector("body > .react-contextmenu.react-contextmenu--visible");
-        // Simulate a right click on the list monitor
-        listMonitor.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true }));
-        // Get the right click menu that opened (monitor context menus are
-        // children of <body>)
-        const contextMenuAfter = document.querySelector("body > .react-contextmenu.react-contextmenu--visible");
-        // `contextMenuAfter` is only null if the context menu was already open
-        // for the list monitor, in which case we can use the context menu from
-        // before the simulated right click
-        const contextMenu = contextMenuAfter === null ? contextMenuBefore : contextMenuAfter;
-        // Sometimes the menu flashes open, so force hide it.
-        contextMenu.style.display = "none";
-        // Override DOM methods to import the text file directly
-        // See: https://github.com/LLK/scratch-gui/blob/develop/src/lib/import-csv.js#L21-L22
-        const appendChild = document.body.appendChild;
-        document.body.appendChild = (fileInput) => {
-          // Restore appendChild to <body>
-          document.body.appendChild = appendChild;
-          if (fileInput instanceof HTMLInputElement) {
-            document.body.appendChild(fileInput);
-            // Prevent Scratch from opening the file input dialog
-            fileInput.click = () => {};
-            // Insert files from the drop event into the file input
-            fileInput.files = files;
-            fileInput.dispatchEvent(new Event("change"));
-            window.requestAnimationFrame(() => {
-              window.requestAnimationFrame(() => {
-                contextMenu.style.display = null;
-                contextMenu.style.opacity = 0;
-                contextMenu.style.pointerEvents = "none";
-              });
-            });
-          } else {
-            // The next call for `appendChild` SHOULD be the file input, but if
-            // it's not, then make `appendChild` behave as normal.
-            console.error('File input was not immediately given to appendChild upon clicking "Import"!');
-            return appendChild(fileInput);
-          }
-        };
-        // Simulate clicking on the "Import" option
-        contextMenu.children[0].click();
+        variable.value = (await Promise.all(Array.from(files, (file) => file.text()))).join("\n").split(/\r?\n/);
       };
       droppable(listMonitor, handleDrop, canDrop);
     }
