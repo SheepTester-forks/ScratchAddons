@@ -61,7 +61,6 @@ export default async function ({ addon, global, console }) {
     traps: { vm },
     redux,
   } = addon.tab;
-  window.addon = addon;
   async function listMonitorsDroppable() {
     while (true) {
       const listMonitor = await addon.tab.waitForElement('div[class*="monitor_list-monitor"]', { markAsSeen: true });
