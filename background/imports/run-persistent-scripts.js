@@ -55,12 +55,12 @@ async function executePersistentScripts({ addonId, permissions, scriptUrls }) {
   const globalObj = Object.create(null);
 
   for (const scriptPath of scriptUrls) {
-    const scriptUrl = chrome.runtime.getURL(`/addons/${addonId}/${scriptPath}`);
+    const scriptUrl = `./static/addons/addons/${addonId}/${scriptPath}`;
     console.log(
       `%cDebug addons/${addonId}/${scriptPath}: ${scriptUrl}`,
       "color:red; font-weight: bold; font-size: 1.2em;"
     );
-    const module = await import(chrome.runtime.getURL(`addons/${addonId}/${scriptPath}`));
+    const module = await import(`../../addons/${addonId}/${scriptPath}`);
     const log = console.log.bind(console, `%c[${addonId}]`, "color:darkorange; font-weight: bold;");
     const warn = console.warn.bind(console, `%c[${addonId}]`, "color:darkorange font-weight: bold;");
     const msg = (key, placeholders) =>

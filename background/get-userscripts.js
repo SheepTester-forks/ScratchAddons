@@ -4,14 +4,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 function getL10NURLs() {
   const langCode = scratchAddons.globalState.auth.scratchLang.toLowerCase();
-  const urls = [chrome.runtime.getURL(`addons-l10n/${langCode}`)];
+  const urls = [`./static/addons/addons-l10n/${langCode}`];
   if (langCode === "pt") {
-    urls.push(chrome.runtime.getURL(`addons-l10n/pt-br`));
+    urls.push("./static/addons/addons-l10n/pt-br");
   }
   if (langCode.includes("-")) {
-    urls.push(chrome.runtime.getURL(`addons-l10n/${langCode.split("-")[0]}`));
+    urls.push(`./static/addons/addons-l10n/${langCode.split("-")[0]}`);
   }
-  const enJSON = chrome.runtime.getURL("addons-l10n/en");
+  const enJSON = "./static/addons/addons-l10n/en";
   if (!urls.includes(enJSON)) urls.push(enJSON);
   return urls;
 }
@@ -104,18 +104,18 @@ async function getAddonData({ addonId, manifest, url }) {
         const arrLength = userstyles.push(null);
         const indexToUse = arrLength - 1;
         promises.push(
-          fetch(chrome.runtime.getURL(`/addons/${addonId}/${style.url}`))
+          fetch(`./static/addons/addons/${addonId}/${style.url}`)
             .then((res) => res.text())
             .then((text) => {
               // Replace %addon-self-dir% for relative URLs
-              text = text.replace(/\%addon-self-dir\%/g, chrome.runtime.getURL(`addons/${addonId}`));
+              text = text.replace(/\%addon-self-dir\%/g, `./static/addons/addons/${addonId}`);
               // Provide source url
               text += `\n/*# sourceURL=${style.url} */`;
               userstyles[indexToUse] = text;
             })
         );
       } else {
-        userstyles.push(chrome.runtime.getURL(`/addons/${addonId}/${style.url}`));
+        userstyles.push(`./static/addons/addons/${addonId}/${style.url}`);
       }
   }
   await Promise.all(promises);
@@ -159,6 +159,7 @@ function createCsIdentity({ tabId, frameId, url }) {
   return `${tabId}/${frameId}@${url}`;
 }
 
+/*
 const csInfoCache = new Map();
 
 // Using this event to preload contentScriptInfo ASAP, since onBeforeRequest
@@ -204,6 +205,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     });
   }
 });
+*/
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (!request.contentScriptReady) return;

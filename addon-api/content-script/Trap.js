@@ -9,7 +9,7 @@ export default class Trap extends Listenable {
     super();
     this._react_internal_key = undefined;
     this._isWWW = tab.clientVersion === "scratch-www";
-    this._getEditorMode = () => this._isWWW && tab.editorMode;
+    this._getEditorMode = () => true;
     this._waitForElement = (q) => tab.waitForElement(q, { markAsSeen: true });
 
     this._cache = Object.create(null);

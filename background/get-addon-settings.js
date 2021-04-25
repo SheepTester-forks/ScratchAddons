@@ -1,4 +1,4 @@
-chrome.storage.sync.get(["addonSettings", "addonsEnabled"], ({ addonSettings = {}, addonsEnabled = {} }) => {
+function sync ({ addonSettings = {}, addonsEnabled = {} }) {
   const func = () => {
     let madeAnyChanges = false;
 
@@ -85,7 +85,10 @@ chrome.storage.sync.get(["addonSettings", "addonsEnabled"], ({ addonSettings = {
       }
     }
 
-    if (madeAnyChanges) chrome.storage.sync.set({ addonSettings, addonsEnabled });
+    if (madeAnyChanges) {
+      localStorage.setItem("[eyangicques] ScratchAddons.addonSettings", JSON.stringify(addonSettings));
+      localStorage.setItem("[eyangicques] ScratchAddons.addonsEnabled", JSON.stringify(addonsEnabled));
+    };
     scratchAddons.globalState.addonSettings = addonSettings;
     scratchAddons.localState.addonsEnabled = addonsEnabled;
     scratchAddons.localState.ready.addonSettings = true;
@@ -93,4 +96,13 @@ chrome.storage.sync.get(["addonSettings", "addonsEnabled"], ({ addonSettings = {
 
   if (scratchAddons.localState.ready.manifests) func();
   else scratchAddons.localEvents.addEventListener("manifestsReady", func);
-});
+}
+
+let addonSettings, addonsEnabled
+try {
+  addonSettings = JSON.parse(localStorage.getItem("[eyangicques] ScratchAddons.addonSettings")) || undefined;
+} catch (err) {}
+try {
+  addonsEnabled = JSON.parse(localStorage.getItem("[eyangicques] ScratchAddons.addonsEnabled")) || undefined;
+} catch (err) {}
+sync({ addonSettings, addonsEnabled });

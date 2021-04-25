@@ -13,12 +13,6 @@ scratchAddons.eventTargets = {
 const pendingPromises = {};
 pendingPromises.msgCount = [];
 
-const comlinkIframe1 = document.getElementById("scratchaddons-iframe-1");
-const comlinkIframe2 = document.getElementById("scratchaddons-iframe-2");
-const comlinkIframe3 = document.getElementById("scratchaddons-iframe-3");
-const comlinkIframe4 = document.getElementById("scratchaddons-iframe-4");
-const _cs_ = Comlink.wrap(Comlink.windowEndpoint(comlinkIframe2.contentWindow, comlinkIframe1.contentWindow));
-
 const page = {
   _globalState: null,
   get globalState() {
@@ -72,7 +66,7 @@ const page = {
     pendingPromises.msgCount = [];
   },
 };
-Comlink.expose(page, Comlink.windowEndpoint(comlinkIframe4.contentWindow, comlinkIframe3.contentWindow));
+window.page = page;
 
 class SharedObserver {
   constructor() {
@@ -263,18 +257,4 @@ else {
     }
   });
   stylesObserver.observe(document.documentElement, { childList: true, subtree: true });
-}
-
-if (location.pathname === "/discuss/3/topic/add/") {
-  const checkUA = () => {
-    if (!window.mySettings) return false;
-    const ua = window.mySettings.markupSet.find((x) => x.className);
-    ua.openWith = window._simple_http_agent = ua.openWith.replace("version", "versions");
-    const textarea = document.getElementById("id_body");
-    if (textarea?.value) {
-      textarea.value = ua.openWith;
-      return true;
-    }
-  };
-  if (!checkUA()) window.addEventListener("DOMContentLoaded", () => checkUA(), { once: true });
 }

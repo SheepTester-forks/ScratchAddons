@@ -1,9 +1,3 @@
-try {
-  if (window.parent.location.origin !== "https://scratch.mit.edu") throw "Scratch Addons: not first party iframe";
-} catch {
-  throw "Scratch Addons: not first party iframe";
-}
-
 chrome.runtime.sendMessage({ contentScriptReady: { url: location.href } }, (res) => {
   if (res) onInfoAvailable(res);
 });
@@ -13,23 +7,6 @@ const DOLLARS = ["$1", "$2", "$3", "$4", "$5", "$6", "$7", "$8", "$9"];
 const promisify = (callbackFn) => (...args) => new Promise((resolve) => callbackFn(...args, resolve));
 
 let _page_ = null;
-
-const comlinkIframesDiv = document.createElement("div");
-comlinkIframesDiv.id = "scratchaddons-iframes";
-const comlinkIframe1 = document.createElement("iframe");
-comlinkIframe1.id = "scratchaddons-iframe-1";
-comlinkIframe1.style.display = "none";
-const comlinkIframe2 = comlinkIframe1.cloneNode();
-comlinkIframe2.id = "scratchaddons-iframe-2";
-const comlinkIframe3 = comlinkIframe1.cloneNode();
-comlinkIframe3.id = "scratchaddons-iframe-3";
-const comlinkIframe4 = comlinkIframe1.cloneNode();
-comlinkIframe4.id = "scratchaddons-iframe-4";
-comlinkIframesDiv.appendChild(comlinkIframe1);
-comlinkIframesDiv.appendChild(comlinkIframe2);
-comlinkIframesDiv.appendChild(comlinkIframe3);
-comlinkIframesDiv.appendChild(comlinkIframe4);
-document.documentElement.appendChild(comlinkIframesDiv);
 
 const csUrlObserver = new EventTarget();
 const cs = {
@@ -41,38 +18,17 @@ const cs = {
     this._url = newUrl;
     csUrlObserver.dispatchEvent(new CustomEvent("change", { detail: { newUrl } }));
   },
-  requestMsgCount() {
-    chrome.runtime.sendMessage("getMsgCount");
-  },
-  copyImage(dataURL) {
-    // Firefox only
-    return new Promise((resolve, reject) => {
-      browser.runtime.sendMessage({ clipboardDataURL: dataURL }).then(
-        (res) => {
-          resolve();
-        },
-        (res) => {
-          reject(res.toString());
-        }
-      );
-    });
-  },
 };
-Comlink.expose(cs, Comlink.windowEndpoint(comlinkIframe1.contentWindow, comlinkIframe2.contentWindow));
-
-const pageComlinkScript = document.createElement("script");
-pageComlinkScript.src = chrome.runtime.getURL("libraries/comlink.js");
-document.documentElement.appendChild(pageComlinkScript);
 
 const moduleScript = document.createElement("script");
 moduleScript.type = "module";
-moduleScript.src = chrome.runtime.getURL("content-scripts/inject/module.js");
+moduleScript.src = "./static/addons/content-scripts/inject/module.js";
 
 (async () => {
   await new Promise((resolve) => {
     moduleScript.addEventListener("load", resolve);
   });
-  _page_ = Comlink.wrap(Comlink.windowEndpoint(comlinkIframe3.contentWindow, comlinkIframe4.contentWindow));
+  _page_ = window.page;
 })();
 
 document.documentElement.appendChild(moduleScript);
@@ -80,30 +36,6 @@ document.documentElement.appendChild(moduleScript);
 let initialUrl = location.href;
 let path = new URL(initialUrl).pathname.substring(1);
 if (path[path.length - 1] !== "/") path += "/";
-const pathArr = path.split("/");
-if (pathArr[0] === "scratch-addons-extension") {
-  if (pathArr[1] === "settings") {
-    let url = chrome.runtime.getURL("webpages/settings/index.html");
-    if (location.hash) url += location.hash;
-    chrome.runtime.sendMessage({ replaceTabWithUrl: url });
-  }
-}
-if (path === "discuss/3/topic/add/") {
-  window.addEventListener("load", () => forumWarning("forumWarning"));
-} else if (path.startsWith("discuss/topic/")) {
-  window.addEventListener("load", () => {
-    if (document.querySelector('div.linkst > ul > li > a[href="/discuss/18/"]')) {
-      forumWarning("forumWarningGeneral");
-    }
-  });
-}
-
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log("[Message from background]", request);
-  if (request === "getInitialUrl") {
-    sendResponse(initialUrl);
-  }
-});
 
 function addStyle(addon) {
   const allStyles = [...document.querySelectorAll(".scratch-addons-style")];
@@ -259,28 +191,6 @@ async function onInfoAvailable({ globalState, l10njson, addonsWithUserscripts, a
 
 const escapeHTML = (str) => str.replace(/([<>'"&])/g, (_, l) => `&#${l.charCodeAt(0)};`);
 
-function forumWarning(key) {
-  let postArea = document.querySelector("form#post > label");
-  if (postArea) {
-    var errorList = document.querySelector("form#post > label > ul");
-    if (!errorList) {
-      let typeArea = postArea.querySelector("strong");
-      errorList = document.createElement("ul");
-      errorList.classList.add("errorlist");
-      postArea.insertBefore(errorList, typeArea);
-    }
-    let addonError = document.createElement("li");
-    let reportLink = document.createElement("a");
-    reportLink.href = "https://scratchaddons.com/feedback";
-    reportLink.target = "_blank";
-    reportLink.innerText = chrome.i18n.getMessage("reportItHere");
-    let text1 = document.createElement("span");
-    text1.innerHTML = escapeHTML(chrome.i18n.getMessage(key, DOLLARS)).replace("$1", reportLink.outerHTML);
-    addonError.appendChild(text1);
-    errorList.appendChild(addonError);
-  }
-}
-
 const showBanner = () => {
   const makeBr = () => document.createElement("br");
 
@@ -335,7 +245,7 @@ const showBanner = () => {
     style: NOTIF_TEXT_STYLE + "font-weight: bold;",
     textContent: chrome.i18n
       .getMessage("extensionHasUpdated", DOLLARS)
-      .replace(/\$(\d+)/g, (_, i) => [chrome.runtime.getManifest().version][Number(i) - 1]),
+      .replace(/\$(\d+)/g, (_, i) => ['1.14.0'][Number(i) - 1]),
   });
   const notifInnerText1 = Object.assign(document.createElement("span"), {
     style: NOTIF_TEXT_STYLE,
@@ -370,12 +280,12 @@ const showBanner = () => {
     style: NOTIF_TEXT_STYLE,
   });
   const notifFooterChangelog = Object.assign(document.createElement("a"), {
-    href: `https://scratchaddons.com/changelog?versionname=${chrome.runtime.getManifest().version}-notif`,
+    href: `https://scratchaddons.com/changelog?versionname=1.14.0-notif`,
     target: "_blank",
     textContent: chrome.i18n.getMessage("notifChangelog"),
   });
   const notifFooterFeedback = Object.assign(document.createElement("a"), {
-    href: `https://scratchaddons.com/feedback?version=${chrome.runtime.getManifest().version}-notif`,
+    href: `https://scratchaddons.com/feedback?version=1.14.0-notif`,
     target: "_blank",
     textContent: chrome.i18n.getMessage("feedback"),
   });
@@ -415,19 +325,19 @@ const showBanner = () => {
 };
 
 const handleBanner = async () => {
-  const currentVersion = chrome.runtime.getManifest().version;
+  const currentVersion = '1.14.0';
   const [major, minor, _] = currentVersion.split(".");
   const currentVersionMajorMinor = `${major}.${minor}`;
   // Making this configurable in the future?
   // Using local because browser extensions may not be updated at the same time across browsers
-  const settings = await promisify(chrome.storage.local.get.bind(chrome.storage.local))(["bannerSettings"]);
+  const settings = JSON.parse(localStorage.getItem("[eyangicques] ScratchAddons.bannerSettings") || '{}');
   const force = !settings || !settings.bannerSettings;
 
   if (force || settings.bannerSettings.lastShown !== currentVersionMajorMinor) {
     console.log("Banner shown.");
-    await promisify(chrome.storage.local.set.bind(chrome.storage.local))({
+    localStorage.setItem("[eyangicques] ScratchAddons.bannerSettings", JSON.stringify({
       bannerSettings: Object.assign({}, settings.bannerSettings, { lastShown: currentVersionMajorMinor }),
-    });
+    }));
     showBanner();
   }
 };
@@ -436,177 +346,4 @@ if (document.readyState !== "loading") {
   handleBanner();
 } else {
   window.addEventListener("DOMContentLoaded", handleBanner, { once: true });
-}
-
-const isProfile = pathArr[0] === "users" && pathArr[2] === "";
-const isStudioComments = pathArr[0] === "studios" && pathArr[2] === "comments";
-const isProject = pathArr[0] === "projects";
-
-if (isProfile || isStudioComments || isProject) {
-  const shouldCaptureComment = (value) => {
-    const regex = / scratch[ ]?add[ ]?ons/;
-    // Trim like scratchr2
-    const trimmedValue = " " + value.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
-    const limitedValue = trimmedValue.toLowerCase().replace(/[^a-z /]+/g, "");
-    return regex.test(limitedValue);
-  };
-  const extensionPolicyLink = document.createElement("a");
-  extensionPolicyLink.href = "https://scratch.mit.edu/discuss/topic/284272/";
-  extensionPolicyLink.target = "_blank";
-  extensionPolicyLink.innerText = chrome.i18n.getMessage("captureCommentPolicy");
-  Object.assign(extensionPolicyLink.style, {
-    textDecoration: "underline",
-    color: "white",
-  });
-  const errorMsgHtml = escapeHTML(chrome.i18n.getMessage("captureCommentError", DOLLARS)).replace(
-    "$1",
-    extensionPolicyLink.outerHTML
-  );
-  const sendAnywayMsg = chrome.i18n.getMessage("captureCommentPostAnyway");
-  const confirmMsg = chrome.i18n.getMessage("captureCommentConfirm");
-
-  if (isProfile || isStudioComments) {
-    window.addEventListener(
-      "click",
-      (e) => {
-        if (
-          e.path[1] &&
-          e.path[1] !== document &&
-          e.path[1].getAttribute("data-control") === "post" &&
-          e.path[1].hasAttribute("data-commentee-id")
-        ) {
-          const form = e.path[3];
-          if (form.tagName !== "FORM") return;
-          if (form.hasAttribute("data-sa-send-anyway")) {
-            form.removeAttribute("data-sa-send-anyway");
-            return;
-          }
-          const textarea = form.querySelector("textarea[name=content]");
-          if (!textarea) return;
-          if (shouldCaptureComment(textarea.value)) {
-            e.stopPropagation();
-            e.preventDefault(); // Avoid location.hash being set to null
-
-            form.querySelector("[data-control=error] .text").innerHTML = errorMsgHtml + " ";
-            const sendAnyway = document.createElement("a");
-            sendAnyway.onclick = () => {
-              const res = confirm(confirmMsg);
-              if (res) {
-                form.setAttribute("data-sa-send-anyway", "");
-                form.querySelector("[data-control=post]").click();
-              }
-            };
-            sendAnyway.textContent = sendAnywayMsg;
-            Object.assign(sendAnyway.style, {
-              textDecoration: "underline",
-              color: "white",
-            });
-            form.querySelector("[data-control=error] .text").appendChild(sendAnyway);
-            form.querySelector(".control-group").classList.add("error");
-          }
-        }
-      },
-      { capture: true }
-    );
-  } else if (isProject) {
-    // For projects, we want to be careful not to hurt performance.
-    // Let's capture the event in the comments container instead
-    // of the whole window. There will be a new comment container
-    // each time the user goes inside the project then outside.
-    let observer;
-    const waitForContainer = () => {
-      if (document.querySelector(".comments-container")) return Promise.resolve();
-      return new Promise((resolve) => {
-        observer = new MutationObserver((mutationsList) => {
-          if (document.querySelector(".comments-container")) {
-            resolve();
-            observer.disconnect();
-          }
-        });
-        observer.observe(document.documentElement, { childList: true, subtree: true });
-      });
-    };
-    const getEditorMode = () => {
-      // From addon-api/content-script/Tab.js
-      const pathname = location.pathname.toLowerCase();
-      const split = pathname.split("/").filter(Boolean);
-      if (!split[0] || split[0] !== "projects") return null;
-      if (split.includes("editor")) return "editor";
-      if (split.includes("fullscreen")) return "fullscreen";
-      if (split.includes("embed")) return "embed";
-      return "projectpage";
-    };
-    const addListener = () =>
-      document.querySelector(".comments-container").addEventListener(
-        "click",
-        (e) => {
-          // When clicking the post button, e.path[0] might
-          // be <span>Post</span> or the <button /> element
-          const possiblePostBtn = e.path[0].tagName === "SPAN" ? e.path[1] : e.path[0];
-          if (!possiblePostBtn) return;
-          if (possiblePostBtn.tagName !== "BUTTON") return;
-          if (!possiblePostBtn.classList.contains("compose-post")) return;
-          const form = e.path[0].tagName === "SPAN" ? e.path[3] : e.path[2];
-          // Remove error when about to send comment anyway, if it exists
-          form.parentNode.querySelector(".compose-error-row")?.remove();
-          if (form.hasAttribute("data-sa-send-anyway")) {
-            form.removeAttribute("data-sa-send-anyway");
-            return;
-          }
-          const textarea = form.querySelector("textarea[name=compose-comment]");
-          if (!textarea) return;
-          if (shouldCaptureComment(textarea.value)) {
-            e.stopPropagation();
-            const errorRow = document.createElement("div");
-            errorRow.className = "flex-row compose-error-row";
-            const errorTip = document.createElement("div");
-            errorTip.className = "compose-error-tip";
-            const span = document.createElement("span");
-            span.innerHTML = errorMsgHtml + " ";
-            const sendAnyway = document.createElement("a");
-            sendAnyway.onclick = () => {
-              const res = confirm(confirmMsg);
-              if (res) {
-                form.setAttribute("data-sa-send-anyway", "");
-                possiblePostBtn.click();
-              }
-            };
-            sendAnyway.textContent = sendAnywayMsg;
-            errorTip.appendChild(span);
-            errorTip.appendChild(sendAnyway);
-            errorRow.appendChild(errorTip);
-            form.parentNode.prepend(errorRow);
-
-            // Hide error after typing like scratch-www does
-            textarea.addEventListener(
-              "input",
-              () => {
-                errorRow.remove();
-              },
-              { once: true }
-            );
-            // Hide error after clicking cancel like scratch-www does
-            form.querySelector(".compose-cancel").addEventListener(
-              "click",
-              () => {
-                errorRow.remove();
-              },
-              { once: true }
-            );
-          }
-        },
-        { capture: true }
-      );
-
-    const check = async () => {
-      if (getEditorMode() === "projectpage") {
-        await waitForContainer();
-        addListener();
-      } else {
-        observer?.disconnect();
-      }
-    };
-    window.addEventListener("load", check);
-    csUrlObserver.addEventListener("change", (e) => check());
-  }
 }
