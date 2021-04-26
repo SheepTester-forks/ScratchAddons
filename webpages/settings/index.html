@@ -389,8 +389,11 @@
           </div>
         </div>
 
-        <div class="addon-warn addon-eyangicques-warning" v-if="!(selectedTab === 'editor' || selectedTab === 'theme' && selectedTag === 'editor')">
-          <img src="../../images/icons/warning.svg">
+        <div
+          class="addon-warn addon-eyangicques-warning"
+          v-if="!(selectedTab === 'editor' || selectedTab === 'theme' && selectedTag === 'editor')"
+        >
+          <img src="../../images/icons/warning.svg" />
           {{ msg("eyangicquesEditorOnly") }}
         </div>
 

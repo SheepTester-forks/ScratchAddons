@@ -2,19 +2,19 @@ import downloadBlob from "../../libraries/download-blob.js";
 import polyfill from "../../background/chrome-polyfill.js";
 const NEW_ADDONS = ["editor-dark-mode", "custom-zoom", "initialise-sprite-position"];
 
-const background = document.createElement('iframe');
-background.style.display = 'none';
-background.src = '../../background/background.html';
-const backgroundLoaded = new Promise(resolve => {
-    background.addEventListener('load', resolve);
+const background = document.createElement("iframe");
+background.style.display = "none";
+background.src = "../../background/background.html";
+const backgroundLoaded = new Promise((resolve) => {
+  background.addEventListener("load", resolve);
 });
 document.documentElement.appendChild(background);
 
 polyfill({
-    name: 'content',
-    frame: background.contentWindow,
-    ready: backgroundLoaded,
-    verbose: false
+  name: "content",
+  frame: background.contentWindow,
+  ready: backgroundLoaded,
+  verbose: false,
 });
 
 Vue.directive("click-outside", {
@@ -228,10 +228,10 @@ const AddonBody = Vue.extend({
             this.addonToEnable = this.addon;
             document.querySelector(".popup").style.animation = "dropDown 1.6s 1";
             this.showPopupModal = true;
-        } else {
+          } else {
             console.log("Permissions granted!");
             toggle();
-        }
+          }
         } else toggle();
       } else toggle();
     },
@@ -306,15 +306,15 @@ Vue.component("addon-setting", AddonSetting);
 const browserLevelPermissions = ["notifications", "clipboardWrite"];
 let grantedOptionalPermissions = [];
 
-function syncGet (key, defaultValue = null) {
-    let storage = defaultValue;
-    try {
-        storage = JSON.parse(localStorage.getItem(`[eyangicques] ScratchAddons.${key}`) || '');
-    } catch (err) {}
-    return storage;
+function syncGet(key, defaultValue = null) {
+  let storage = defaultValue;
+  try {
+    storage = JSON.parse(localStorage.getItem(`[eyangicques] ScratchAddons.${key}`) || "");
+  } catch (err) {}
+  return storage;
 }
-function syncSet (key, value) {
-    localStorage.setItem(`[eyangicques] ScratchAddons.${key}`, JSON.stringify(value));
+function syncSet(key, value) {
+  localStorage.setItem(`[eyangicques] ScratchAddons.${key}`, JSON.stringify(value));
 }
 
 //theme switching
@@ -322,16 +322,16 @@ const lightThemeLink = document.createElement("link");
 lightThemeLink.setAttribute("rel", "stylesheet");
 lightThemeLink.setAttribute("href", "light.css");
 setTimeout(() => {
-    let rr = false; //true = light, false = dark
-    if (syncGet("globalTheme")) rr = true;
-    if (rr) {
-      document.head.appendChild(lightThemeLink);
-      vue.theme = true;
-      vue.themePath = "../../images/icons/moon.svg";
-    } else {
-      vue.theme = false;
-      vue.themePath = "../../images/icons/theme.svg";
-    }
+  let rr = false; //true = light, false = dark
+  if (syncGet("globalTheme")) rr = true;
+  if (rr) {
+    document.head.appendChild(lightThemeLink);
+    vue.theme = true;
+    vue.themePath = "../../images/icons/moon.svg";
+  } else {
+    vue.theme = false;
+    vue.themePath = "../../images/icons/theme.svg";
+  }
 });
 
 if (window.parent !== window) {
@@ -345,9 +345,9 @@ let handleConfirmClicked = null;
 
 const serializeSettings = async () => {
   const storedSettings = {
-      globalTheme: syncGet("globalTheme"),
-      addonSettings: syncGet("addonSettings", {}),
-      addonsEnabled: syncGet("addonsEnabled", {}),
+    globalTheme: syncGet("globalTheme"),
+    addonSettings: syncGet("addonSettings", {}),
+    addonsEnabled: syncGet("addonsEnabled", {}),
   };
   const serialized = {
     core: {
@@ -554,19 +554,19 @@ const vue = (window.vue = new Vue({
       this.searchInput = "";
     },
     setTheme(mode) {
-        const r = syncGet("globalTheme");
-        let rr = true; //true = light, false = dark
-        rr = mode;
-        syncSet("globalTheme", rr);
-        if (rr && r !== rr) {
-          document.head.appendChild(lightThemeLink);
-          vue.theme = true;
-          vue.themePath = "../../images/icons/moon.svg";
-        } else if (r !== rr) {
-          document.head.removeChild(lightThemeLink);
-          vue.theme = false;
-          vue.themePath = "../../images/icons/theme.svg";
-        }
+      const r = syncGet("globalTheme");
+      let rr = true; //true = light, false = dark
+      rr = mode;
+      syncSet("globalTheme", rr);
+      if (rr && r !== rr) {
+        document.head.appendChild(lightThemeLink);
+        vue.theme = true;
+        vue.themePath = "../../images/icons/moon.svg";
+      } else if (r !== rr) {
+        document.head.removeChild(lightThemeLink);
+        vue.theme = false;
+        vue.themePath = "../../images/icons/theme.svg";
+      }
     },
     stopPropagation(e) {
       e.stopPropagation();
@@ -651,7 +651,7 @@ const vue = (window.vue = new Vue({
     },
     popupOrderAddonsEnabledFirst() {
       return new Promise((resolve) => {
-          return resolve();
+        return resolve();
         chrome.tabs.query({ currentWindow: true, active: true }, (tabs) => {
           if (!tabs[0].id) return;
           chrome.tabs.sendMessage(tabs[0].id, "getRunningAddons", { frameId: 0 }, (res) => {

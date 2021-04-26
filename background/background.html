@@ -3,13 +3,13 @@
 
   <!-- Hacky "polyfill" for chrome.runtime -->
   <script type="module">
-    import polyfill from './chrome-polyfill.js';
-      const messageOptions = {
-          name: 'background',
-          frame: window.parent,
-          verbose: false
-      };
-      polyfill(messageOptions);
+    import polyfill from "./chrome-polyfill.js";
+    const messageOptions = {
+      name: "background",
+      frame: window.parent,
+      verbose: false,
+    };
+    polyfill(messageOptions);
   </script>
 
   <!-- Transition from Scratch Messaging Extension -->

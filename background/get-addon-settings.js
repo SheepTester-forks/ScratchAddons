@@ -1,4 +1,4 @@
-function sync ({ addonSettings = {}, addonsEnabled = {} }) {
+function sync({ addonSettings = {}, addonsEnabled = {} }) {
   const func = () => {
     let madeAnyChanges = false;
 
@@ -88,7 +88,7 @@ function sync ({ addonSettings = {}, addonsEnabled = {} }) {
     if (madeAnyChanges) {
       localStorage.setItem("[eyangicques] ScratchAddons.addonSettings", JSON.stringify(addonSettings));
       localStorage.setItem("[eyangicques] ScratchAddons.addonsEnabled", JSON.stringify(addonsEnabled));
-    };
+    }
     scratchAddons.globalState.addonSettings = addonSettings;
     scratchAddons.localState.addonsEnabled = addonsEnabled;
     scratchAddons.localState.ready.addonSettings = true;
@@ -98,7 +98,7 @@ function sync ({ addonSettings = {}, addonsEnabled = {} }) {
   else scratchAddons.localEvents.addEventListener("manifestsReady", func);
 }
 
-let addonSettings, addonsEnabled
+let addonSettings, addonsEnabled;
 try {
   addonSettings = JSON.parse(localStorage.getItem("[eyangicques] ScratchAddons.addonSettings")) || undefined;
 } catch (err) {}

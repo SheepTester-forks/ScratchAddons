@@ -1,5 +1,13 @@
 A fork of Scratch Addons to stuff into [E羊icques](https://github.com/SheepTester/scratch-gui).
 
+**DO NOT EVEN *THINK* ABOUT MERGING THIS UPSTREAM.**
+
+To autoformat, do
+
+```sh
+prettier --end-of-line=auto -w .
+```
+
 ---
 
 <img src="https://raw.githubusercontent.com/ScratchAddons/ScratchAddons/master/images/icon.svg" alt="Scratch Addons logo" align="right" width="128px"></img>

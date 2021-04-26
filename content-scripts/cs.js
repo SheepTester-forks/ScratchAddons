@@ -1,6 +1,6 @@
 // Fake Scratch project editor URL because addons use Scratch website URL
 // matching
-chrome.runtime.sendMessage({ contentScriptReady: { url: 'https://scratch.mit.edu/projects/0/editor' } }, (res) => {
+chrome.runtime.sendMessage({ contentScriptReady: { url: "https://scratch.mit.edu/projects/0/editor" } }, (res) => {
   if (res) onInfoAvailable(res);
 });
 
@@ -244,7 +244,7 @@ const showBanner = () => {
     style: NOTIF_TEXT_STYLE + "font-weight: bold;",
     textContent: chrome.i18n
       .getMessage("extensionHasUpdated", DOLLARS)
-      .replace(/\$(\d+)/g, (_, i) => ['1.14.0'][Number(i) - 1]),
+      .replace(/\$(\d+)/g, (_, i) => ["1.14.0"][Number(i) - 1]),
   });
   const notifInnerText1 = Object.assign(document.createElement("span"), {
     style: NOTIF_TEXT_STYLE,
@@ -324,19 +324,22 @@ const showBanner = () => {
 };
 
 const handleBanner = async () => {
-  const currentVersion = '1.14.0';
+  const currentVersion = "1.14.0";
   const [major, minor, _] = currentVersion.split(".");
   const currentVersionMajorMinor = `${major}.${minor}`;
   // Making this configurable in the future?
   // Using local because browser extensions may not be updated at the same time across browsers
-  const settings = JSON.parse(localStorage.getItem("[eyangicques] ScratchAddons.bannerSettings") || '{}');
+  const settings = JSON.parse(localStorage.getItem("[eyangicques] ScratchAddons.bannerSettings") || "{}");
   const force = !settings || !settings.bannerSettings;
 
   if (force || settings.bannerSettings.lastShown !== currentVersionMajorMinor) {
     console.log("Banner shown.");
-    localStorage.setItem("[eyangicques] ScratchAddons.bannerSettings", JSON.stringify({
-      bannerSettings: Object.assign({}, settings.bannerSettings, { lastShown: currentVersionMajorMinor }),
-    }));
+    localStorage.setItem(
+      "[eyangicques] ScratchAddons.bannerSettings",
+      JSON.stringify({
+        bannerSettings: Object.assign({}, settings.bannerSettings, { lastShown: currentVersionMajorMinor }),
+      })
+    );
     showBanner();
   }
 };

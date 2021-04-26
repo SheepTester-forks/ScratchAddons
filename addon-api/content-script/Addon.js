@@ -10,7 +10,7 @@ export default class UserscriptAddon extends Addon {
   constructor(info) {
     super(info);
     this._addonId = info.id;
-    this.__path = './static/addons/';
+    this.__path = "./static/addons/";
     this.tab = new Tab(info);
     this.self.disabled = false;
     this.self.enabledLate = info.enabledLate;
