@@ -21,9 +21,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   } else if (request.changeEnabledState) {
     const { addonId, newState } = request.changeEnabledState;
     scratchAddons.localState.addonsEnabled[addonId] = newState;
-    chrome.storage.sync.set({
-      addonsEnabled: scratchAddons.localState.addonsEnabled,
-    });
+    localStorage.setItem("[eyangicques] ScratchAddons.addonsEnabled", JSON.stringify(scratchAddons.localState.addonsEnabled));
     const manifest = scratchAddons.manifests.find((addon) => addon.addonId === addonId).manifest;
     const { dynamicEnable, dynamicDisable } = manifest;
     // Fire disabled event for userscripts
@@ -49,9 +47,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   } else if (request.changeAddonSettings) {
     const { addonId, newSettings } = request.changeAddonSettings;
     scratchAddons.globalState.addonSettings[addonId] = newSettings;
-    chrome.storage.sync.set({
-      addonSettings: scratchAddons.globalState.addonSettings,
-    });
+    localStorage.setItem("[eyangicques] ScratchAddons.addonSettings", JSON.stringify(scratchAddons.globalState.addonSettings));
 
     const manifest = scratchAddons.manifests.find((addon) => addon.addonId === addonId).manifest;
     const { updateUserstylesOnSettingsChange } = manifest;

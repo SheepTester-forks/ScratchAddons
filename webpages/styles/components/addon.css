@@ -17,6 +17,9 @@
   display: flex;
   align-items: center;
 }
+.addon-eyangicques-warning {
+  margin: 20px 30px 0;
+}
 .addon-description-full,
 .addon-credits {
   width: 100%;

@@ -272,6 +272,9 @@
   "captureCommentConfirm": {
     "message": "Are you sure you want to post this comment? Scratch will probably mute your account from commenting anywhere on Scratch for at least 5 minutes."
   },
+  "eyangicquesEditorOnly": {
+    "message": "Many of these addons will not work in E羊icques because they require the Scratch website. Thus, it's up to you to decide whether to enable an addon, but please note that if an addon doesn't work, it is probably because of this mod rather than Scratch Addons."
+  },
   "extensionStoreDescription1": {
     "message": "➖ scratch.mit.edu features ➖\n- Messaging: click the extension icon to get a summary of your messages.\n- Cloud games: see who's playing multiplayer games.\n- Notifier: get browser notifications when you get new messages.\n- Navigation bar customization: re-add the “discuss” button.\n- Make 2.0-styled pages look like 3.0.\n- Website and editor dark modes.\n- And more!"
   },

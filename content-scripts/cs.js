@@ -21,6 +21,7 @@ const cs = {
     csUrlObserver.dispatchEvent(new CustomEvent("change", { detail: { newUrl } }));
   },
 };
+window._cs_ = cs;
 
 const moduleScript = document.createElement("script");
 moduleScript.type = "module";

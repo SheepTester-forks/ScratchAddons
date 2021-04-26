@@ -276,6 +276,7 @@
       <img :src="switchPath" class="toggle" @click="sidebarToggle()" v-show="smallMode" alt="Logo" />
       <img src="../../images/icon.svg" class="logo" alt="Logo" />
       <h1>{{ msg("settings") }}</h1>
+      <a href="../../../../index.html">Return to E羊icques</a>
       <img @click="setTheme(!theme)" class="theme-switch" v-bind:src="themePath" />
     </div>
     <div class="main">
@@ -386,6 +387,11 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <div class="addon-warn addon-eyangicques-warning" v-if="!(selectedTab === 'editor' || selectedTab === 'theme' && selectedTag === 'editor')">
+          <img src="../../images/icons/warning.svg">
+          {{ msg("eyangicquesEditorOnly") }}
         </div>
 
         <div class="addons-container">

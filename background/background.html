@@ -2,7 +2,15 @@
   <meta charset="UTF-8" />
 
   <!-- Hacky "polyfill" for chrome.runtime -->
-  <script src="chrome-polyfill.js" type="module"></script>
+  <script type="module">
+    import polyfill from './chrome-polyfill.js';
+      const messageOptions = {
+          name: 'background',
+          frame: window.parent,
+          verbose: false
+      };
+      polyfill(messageOptions);
+  </script>
 
   <!-- Transition from Scratch Messaging Extension -->
   <!-- <script src="transition.js" type="module"></script> -->
@@ -32,6 +40,6 @@
   <script src="get-persistent-scripts.js" type="module"></script>
 
   <!-- Respond to requests by the settings page and others -->
-  <!-- <script src="handle-settings-page.js" type="module"></script> -->
-  <!-- <script src="handle-licenses.js" type="module"></script> -->
+  <script src="handle-settings-page.js" type="module"></script>
+  <script src="handle-licenses.js" type="module"></script>
 </head>

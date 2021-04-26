@@ -1,5 +1,21 @@
 import downloadBlob from "../../libraries/download-blob.js";
+import polyfill from "../../background/chrome-polyfill.js";
 const NEW_ADDONS = ["editor-dark-mode", "custom-zoom", "initialise-sprite-position"];
+
+const background = document.createElement('iframe');
+background.style.display = 'none';
+background.src = '../../background/background.html';
+const backgroundLoaded = new Promise(resolve => {
+    background.addEventListener('load', resolve);
+});
+document.documentElement.appendChild(background);
+
+polyfill({
+    name: 'content',
+    frame: background.contentWindow,
+    ready: backgroundLoaded,
+    verbose: false
+});
 
 Vue.directive("click-outside", {
   priority: 700,
@@ -212,18 +228,10 @@ const AddonBody = Vue.extend({
             this.addonToEnable = this.addon;
             document.querySelector(".popup").style.animation = "dropDown 1.6s 1";
             this.showPopupModal = true;
-          } else
-            chrome.permissions.request(
-              {
-                permissions: requiredPermissions,
-              },
-              (granted) => {
-                if (granted) {
-                  console.log("Permissions granted!");
-                  toggle();
-                }
-              }
-            );
+        } else {
+            console.log("Permissions granted!");
+            toggle();
+        }
         } else toggle();
       } else toggle();
     },
@@ -297,29 +305,33 @@ Vue.component("addon-setting", AddonSetting);
 
 const browserLevelPermissions = ["notifications", "clipboardWrite"];
 let grantedOptionalPermissions = [];
-const updateGrantedPermissions = () =>
-  chrome.permissions.getAll(({ permissions }) => {
-    grantedOptionalPermissions = permissions.filter((p) => browserLevelPermissions.includes(p));
-  });
-updateGrantedPermissions();
-chrome.permissions.onAdded.addListener(updateGrantedPermissions);
-chrome.permissions.onRemoved.addListener(updateGrantedPermissions);
+
+function syncGet (key, defaultValue = null) {
+    let storage = defaultValue;
+    try {
+        storage = JSON.parse(localStorage.getItem(`[eyangicques] ScratchAddons.${key}`) || '');
+    } catch (err) {}
+    return storage;
+}
+function syncSet (key, value) {
+    localStorage.setItem(`[eyangicques] ScratchAddons.${key}`, JSON.stringify(value));
+}
 
 //theme switching
 const lightThemeLink = document.createElement("link");
 lightThemeLink.setAttribute("rel", "stylesheet");
 lightThemeLink.setAttribute("href", "light.css");
-chrome.storage.sync.get(["globalTheme"], function (r) {
-  let rr = false; //true = light, false = dark
-  if (r.globalTheme) rr = r.globalTheme;
-  if (rr) {
-    document.head.appendChild(lightThemeLink);
-    vue.theme = true;
-    vue.themePath = "../../images/icons/moon.svg";
-  } else {
-    vue.theme = false;
-    vue.themePath = "../../images/icons/theme.svg";
-  }
+setTimeout(() => {
+    let rr = false; //true = light, false = dark
+    if (syncGet("globalTheme")) rr = true;
+    if (rr) {
+      document.head.appendChild(lightThemeLink);
+      vue.theme = true;
+      vue.themePath = "../../images/icons/moon.svg";
+    } else {
+      vue.theme = false;
+      vue.themePath = "../../images/icons/theme.svg";
+    }
 });
 
 if (window.parent !== window) {
@@ -332,8 +344,11 @@ const promisify = (callbackFn) => (...args) => new Promise((resolve) => callback
 let handleConfirmClicked = null;
 
 const serializeSettings = async () => {
-  const syncGet = promisify(chrome.storage.sync.get.bind(chrome.storage.sync));
-  const storedSettings = await syncGet(["globalTheme", "addonSettings", "addonsEnabled"]);
+  const storedSettings = {
+      globalTheme: syncGet("globalTheme"),
+      addonSettings: syncGet("addonSettings", {}),
+      addonsEnabled: syncGet("addonsEnabled", {}),
+  };
   const serialized = {
     core: {
       lightTheme: storedSettings.globalTheme,
@@ -352,9 +367,8 @@ const serializeSettings = async () => {
 
 const deserializeSettings = async (str, manifests, confirmElem) => {
   const obj = JSON.parse(str);
-  const syncGet = promisify(chrome.storage.sync.get.bind(chrome.storage.sync));
-  const syncSet = promisify(chrome.storage.sync.set.bind(chrome.storage.sync));
-  const { addonSettings, addonsEnabled } = await syncGet(["addonSettings", "addonsEnabled"]);
+  const addonSettings = syncGet("addonSettings", {});
+  const addonsEnabled = syncGet("addonsEnabled", {});
   const pendingPermissions = {};
   for (const addonId of Object.keys(obj.addons)) {
     const addonValue = obj.addons[addonId];
@@ -386,11 +400,9 @@ const deserializeSettings = async (str, manifests, confirmElem) => {
         addonsEnabled[addonId] = granted;
       });
     }
-    await syncSet({
-      globalTheme: !!obj.core.lightTheme,
-      addonsEnabled,
-      addonSettings,
-    });
+    syncSet("globalTheme", !!obj.core.lightTheme);
+    syncSet("addonsEnabled", addonsEnabled);
+    syncSet("addonSettings", addonSettings);
     resolvePromise();
   };
   confirmElem.classList.remove("hidden-button");
@@ -410,7 +422,7 @@ const vue = (window.vue = new Vue({
     categoryOpen: true,
     loaded: false,
     manifests: [],
-    selectedTab: "all",
+    selectedTab: "editor",
     selectedTag: null,
     searchInput: "",
     addonSettings: {},
@@ -542,21 +554,19 @@ const vue = (window.vue = new Vue({
       this.searchInput = "";
     },
     setTheme(mode) {
-      chrome.storage.sync.get(["globalTheme"], function (r) {
+        const r = syncGet("globalTheme");
         let rr = true; //true = light, false = dark
         rr = mode;
-        chrome.storage.sync.set({ globalTheme: rr }, function () {
-          if (rr && r.globalTheme !== rr) {
-            document.head.appendChild(lightThemeLink);
-            vue.theme = true;
-            vue.themePath = "../../images/icons/moon.svg";
-          } else if (r.globalTheme !== rr) {
-            document.head.removeChild(lightThemeLink);
-            vue.theme = false;
-            vue.themePath = "../../images/icons/theme.svg";
-          }
-        });
-      });
+        syncSet("globalTheme", rr);
+        if (rr && r !== rr) {
+          document.head.appendChild(lightThemeLink);
+          vue.theme = true;
+          vue.themePath = "../../images/icons/moon.svg";
+        } else if (r !== rr) {
+          document.head.removeChild(lightThemeLink);
+          vue.theme = false;
+          vue.themePath = "../../images/icons/theme.svg";
+        }
     },
     stopPropagation(e) {
       e.stopPropagation();
@@ -641,6 +651,7 @@ const vue = (window.vue = new Vue({
     },
     popupOrderAddonsEnabledFirst() {
       return new Promise((resolve) => {
+          return resolve();
         chrome.tabs.query({ currentWindow: true, active: true }, (tabs) => {
           if (!tabs[0].id) return;
           chrome.tabs.sendMessage(tabs[0].id, "getRunningAddons", { frameId: 0 }, (res) => {
