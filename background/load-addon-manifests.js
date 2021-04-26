@@ -1,13 +1,13 @@
 (async function () {
-  const folderNames = await (await fetch("./static/addons/addons/addons.json")).json();
+  const folderNames = await (await fetch("../addons/addons.json")).json();
   folderNames.forEach((addonId, i) => {
-    if (folderNames.lastIndexOf(addonId) !== i) throw "Duplicated value in ./static/addons/addons/addons.json";
+    if (folderNames.lastIndexOf(addonId) !== i) throw "Duplicated value in ../addons/addons.json";
   });
   await scratchAddons.l10n.load(folderNames);
   const useDefault = scratchAddons.l10n.locale.startsWith("en");
   for (const folderName of folderNames) {
     if (folderName.startsWith("//")) continue;
-    const manifest = await (await fetch(`./static/addons/addons/${folderName}/addon.json`)).json();
+    const manifest = await (await fetch(`../addons/${folderName}/addon.json`)).json();
     if (manifest.l10n && !useDefault) {
       for (const prop of ["name", "description"]) {
         if (manifest[prop]) manifest[prop] = scratchAddons.l10n.get(`${folderName}/@${prop}`, {}, manifest[prop]);

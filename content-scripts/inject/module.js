@@ -158,11 +158,7 @@ function onDataReady() {
 }
 
 function bodyIsEditorClassCheck() {
-  const pathname = location.pathname.toLowerCase();
-  const split = pathname.split("/").filter(Boolean);
-  if (!split[0] || split[0] !== "projects") return;
-  if (split.includes("editor") || split.includes("fullscreen")) document.body.classList.add("sa-body-editor");
-  else document.body.classList.remove("sa-body-editor");
+  document.body.classList.add("sa-body-editor");
 }
 if (!document.body) document.addEventListener("DOMContentLoaded", bodyIsEditorClassCheck);
 else bodyIsEditorClassCheck();
@@ -248,13 +244,8 @@ function loadClasses() {
   });
 }
 
-if (document.querySelector("title")) loadClasses();
-else {
-  const stylesObserver = new MutationObserver((mutationsList) => {
-    if (document.querySelector("title")) {
-      stylesObserver.disconnect();
-      loadClasses();
-    }
-  });
-  stylesObserver.observe(document.documentElement, { childList: true, subtree: true });
+if (document.readyState !== "loading") {
+  loadClasses();
+} else {
+  window.addEventListener("DOMContentLoaded", loadClasses, { once: true });
 }

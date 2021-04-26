@@ -4,14 +4,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 function getL10NURLs() {
   const langCode = scratchAddons.globalState.auth.scratchLang.toLowerCase();
-  const urls = [`./static/addons/addons-l10n/${langCode}`];
+  const urls = [`static/addons/addons-l10n/${langCode}`];
   if (langCode === "pt") {
-    urls.push("./static/addons/addons-l10n/pt-br");
+    urls.push("static/addons/addons-l10n/pt-br");
   }
   if (langCode.includes("-")) {
-    urls.push(`./static/addons/addons-l10n/${langCode.split("-")[0]}`);
+    urls.push(`static/addons/addons-l10n/${langCode.split("-")[0]}`);
   }
-  const enJSON = "./static/addons/addons-l10n/en";
+  const enJSON = "static/addons/addons-l10n/en";
   if (!urls.includes(enJSON)) urls.push(enJSON);
   return urls;
 }
@@ -104,7 +104,7 @@ async function getAddonData({ addonId, manifest, url }) {
         const arrLength = userstyles.push(null);
         const indexToUse = arrLength - 1;
         promises.push(
-          fetch(`./static/addons/addons/${addonId}/${style.url}`)
+          fetch(`../addons/${addonId}/${style.url}`)
             .then((res) => res.text())
             .then((text) => {
               // Replace %addon-self-dir% for relative URLs

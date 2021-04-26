@@ -1,4 +1,6 @@
-chrome.runtime.sendMessage({ contentScriptReady: { url: location.href } }, (res) => {
+// Fake Scratch project editor URL because addons use Scratch website URL
+// matching
+chrome.runtime.sendMessage({ contentScriptReady: { url: 'https://scratch.mit.edu/projects/0/editor' } }, (res) => {
   if (res) onInfoAvailable(res);
 });
 
@@ -32,10 +34,6 @@ moduleScript.src = "./static/addons/content-scripts/inject/module.js";
 })();
 
 document.documentElement.appendChild(moduleScript);
-
-let initialUrl = location.href;
-let path = new URL(initialUrl).pathname.substring(1);
-if (path[path.length - 1] !== "/") path += "/";
 
 function addStyle(addon) {
   const allStyles = [...document.querySelectorAll(".scratch-addons-style")];
